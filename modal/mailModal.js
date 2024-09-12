@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
 const jobSchema = new mongoose.Schema({
-    id: String,
-    displayName: String,
+    id: {
+        type: String,
+        unique: true
+    },
+    displayName: {
+        type: String,
+        unique: true
+    },
     schedule: String,
     message: String,
     lastSuccess: String,

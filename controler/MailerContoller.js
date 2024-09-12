@@ -1,6 +1,5 @@
 const mailer = require("./mailer");
 const uniqid = require('uniqid');
-
 const jobSchema = require("../modal/mailModal");
 
 const getAllSchedule = async (req, res) => {
@@ -82,13 +81,13 @@ const createNewTask = async (req, res) => {
             schedule: req.body.schedule,
             message: req.body.message,
             lastSuccess: "",
-            status: 'running', // Set initial status to running
+            status: 'running', 
             nextSchedule: ""
         };
 
         const jobDetails = new jobSchema(data);
         await jobDetails.save();
-        mailer(data.displayName, data.schedule, req.body.to); // Start the job
+        mailer(data.displayName, data.schedule, req.body.to); 
         res.json({
             success: true,
             message: "Job scheduled. Let's complete your task!"
