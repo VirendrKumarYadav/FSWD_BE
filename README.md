@@ -1,5 +1,8 @@
 # Email Scheduler API
 
+### Hosted URL : {  BE:https://fswd-be.onrender.com/api/v1/mail, FE:https://fswd-6.vercel.app/ }
+                 }
+
 ## Description
 
 The Email Scheduler API allows users to schedule email tasks using cron jobs. Users can create, edit, delete, stop, and restart scheduled email tasks. The API is built using Node.js, Express, and MongoDB, and it provides a simple interface for managing email reminders.
