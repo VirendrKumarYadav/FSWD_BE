@@ -113,7 +113,7 @@ const stopSchedule = async (req, res) => {
             });
         }
 
-        mailer.stopCronJob(displayName);
+        stopCronJob(displayName);
 
         jobData.status = 'stopped';
         await jobData.save();
@@ -143,7 +143,7 @@ const restartSchedule = async (req, res) => {
             });
         }
 
-        mailer.restartCronJob(displayName, jobData.schedule, req.body.to);
+        restartCronJob(displayName, jobData.schedule, req.body.to);
 
         jobData.status = 'running';
         await jobData.save();
