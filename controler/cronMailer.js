@@ -6,6 +6,8 @@ dotenv.config();
 let jobs = {}; 
 
 const mailer = async (jobName, schedule, to) => {
+    console.log(jobName);
+    
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {

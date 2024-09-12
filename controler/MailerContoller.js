@@ -1,6 +1,6 @@
-const mailer = require("./mailer");
 const uniqid = require('uniqid');
 const jobSchema = require("../modal/mailModal");
+const { mailer, stopCronJob, restartCronJob } = require('./cronMailer');
 
 const getAllSchedule = async (req, res) => {
     try {
