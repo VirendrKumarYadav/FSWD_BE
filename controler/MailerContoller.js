@@ -1,131 +1,166 @@
-const mailer = require("./mailer")
-const mailSchema = require("../modal/mailModal");
-var uniqid = require('uniqid');
+const mailer = require("./mailer");
+const uniqid = require('uniqid');
 
-const createNewTask = async (req, res) => {
-
-    try {
-        const data = {
-            id: uniqid(),
-            displayName:req.body.displayName,
-            schedule: req.body.schedule,
-            massage:req.body.massage,
-            lastSucess: "",
-            status: false,
-            nextSchedule: ""
-        }
-
-        const mailDetails = new mailSchema(data);
-        await mailDetails.save();
-        mailer("5", req.body.to)
-        res.json({
-            success: true,
-            massage: "Mail timmer scheduled, Let's complete your task!"
-        });
-
-    } catch (error) {
-        res.json({
-            success: false,
-            massage: error.massage
-        });
-    }
-}
-
+const jobSchema = require("../modal/mailModal");
 
 const getAllSchedule = async (req, res) => {
-
     try {
-        const data = await mailSchema.find();
-
+        const data = await jobSchema.find();
         res.json({
             listOfScheduled: data,
             success: true,
-            massage: "Get List of mail schedule!",
-        })
+            message: "Retrieved the list of scheduled jobs."
+        });
 
     } catch (error) {
-        res.status(404).json({
+        res.status(500).json({
             success: false,
-            massage: error.massage
-        })
+            message: error.message || "An error occurred while retrieving scheduled jobs."
+        });
     }
-}
+};
 
 const editTask = async (req, res) => {
     try {
-        const mailData = await mailSchema.findOne(req.body);
-        const updatedDetails=await mailData.updateOne({displayName:req.body.displayName});
+        const { displayName, ...updateFields } = req.body;
+        const jobData = await jobSchema.findOne({ displayName });
+
+        if (!jobData) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found."
+            });
+        }
+
+        const updatedDetails = await jobData.updateOne(updateFields);
         res.json({
-            status:updatedDetails,
+            status: updatedDetails,
             success: true,
-            massage: "Get List of mail schedule!",
-        })
+            message: "Job updated successfully."
+        });
 
     } catch (error) {
-        res.status(404).json({
+        res.status(500).json({
             success: false,
-            massage: error.massage
-        })
+            message: error.message || "An error occurred while updating the job."
+        });
     }
-}
+};
 
 const deleteTask = async (req, res) => {
-
-       try {
-           const mailData = await mailSchema.findOne(req.body);
-           const updatedDetails=await mailData.deleteOne();
-           res.json({
-               status:updatedDetails ,
-               success: true,
-               massage: "Get List of mail schedule!",
-           })
-   
-       } catch (error) {
-           res.status(404).json({
-               success: false,
-               massage: error.massage
-           })
-       }
-   }
-
-   const stopSchedule = async (req, res) => {
-
     try {
-        const mailData = await mailSchema.findOne(req.body);
-        const updatedDetails=await mailData.deleteOne();
+        const { displayName } = req.body;
+        const jobData = await jobSchema.findOne({ displayName });
+
+        if (!jobData) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found."
+            });
+        }
+
+        const deletedDetails = await jobData.deleteOne();
         res.json({
-            status:updatedDetails ,
+            status: deletedDetails,
             success: true,
-            massage: "Get List of mail schedule!",
-        })
+            message: "Job deleted successfully."
+        });
 
     } catch (error) {
-        res.status(404).json({
+        res.status(500).json({
             success: false,
-            massage: error.massage
-        })
+            message: error.message || "An error occurred while deleting the job."
+        });
     }
-}
+};
 
+const createNewTask = async (req, res) => {
+    try {
+        const data = {
+            id: uniqid(),
+            displayName: req.body.displayName,
+            schedule: req.body.schedule,
+            message: req.body.message,
+            lastSuccess: "",
+            status: 'running', // Set initial status to running
+            nextSchedule: ""
+        };
+
+        const jobDetails = new jobSchema(data);
+        await jobDetails.save();
+        mailer(data.displayName, data.schedule, req.body.to); // Start the job
+        res.json({
+            success: true,
+            message: "Job scheduled. Let's complete your task!"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message || "An error occurred while scheduling the job."
+        });
+    }
+};
+
+const stopSchedule = async (req, res) => {
+    try {
+        const { displayName } = req.body;
+        const jobData = await jobSchema.findOne({ displayName });
+
+        if (!jobData) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found."
+            });
+        }
+
+        mailer.stopCronJob(displayName);
+
+        jobData.status = 'stopped';
+        await jobData.save();
+
+        res.json({
+            success: true,
+            message: "Scheduled job stopped successfully."
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message || "An error occurred while stopping the job."
+        });
+    }
+};
 
 const restartSchedule = async (req, res) => {
-
     try {
-        const mailData = await mailSchema.findOne(req.body);
-        const updatedDetails=await mailData.deleteOne();
+        const { displayName } = req.body;
+        const jobData = await jobSchema.findOne({ displayName });
+
+        if (!jobData) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found."
+            });
+        }
+
+        mailer.restartCronJob(displayName, jobData.schedule, req.body.to);
+
+        jobData.status = 'running';
+        await jobData.save();
+
         res.json({
-            status:updatedDetails ,
             success: true,
-            massage: "Get List of mail schedule!",
-        })
+            message: "Scheduled job restarted successfully."
+        });
 
     } catch (error) {
-        res.status(404).json({
+        res.status(500).json({
             success: false,
-            massage: error.massage
-        })
+            message: error.message || "An error occurred while restarting the job."
+        });
     }
-}
+};
 
 const mailController = {
     getAllSchedule,
@@ -134,25 +169,6 @@ const mailController = {
     deleteTask,
     stopSchedule,
     restartSchedule
-}
+};
 
 module.exports = mailController;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

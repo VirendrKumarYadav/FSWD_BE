@@ -1,11 +1,12 @@
-const express=require("express");
-const mailController=require("../controler/MailerContoller")
-const router=express.Router();
+const express = require("express");
+const mailController = require("../controler/MailerContoller");
+const router = express.Router();
 
-router.get("/",mailController.getAllSchedule)
+router.get("/", mailController.getAllSchedule);
+router.post("/add-task", mailController.createNewTask);
+router.patch("/edit", mailController.editTask);
+router.delete("/remove", mailController.deleteTask); 
+router.patch("/stop", mailController.stopSchedule);
+router.patch("/restart", mailController.restartSchedule);
 
-router.post("/add-task",mailController.createNewTask);
-router.patch("/edit",mailController.editTask);
-router.patch("/remove",mailController.deleteTask);
-
-module.exports=router;   
+module.exports = router;

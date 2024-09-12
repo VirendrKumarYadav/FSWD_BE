@@ -3,8 +3,9 @@ const nodemailer = require('nodemailer');
 const dotenv = require("dotenv");
 dotenv.config();
 
-const mailer=async(timer,to)=>{
-    console.log(timer,to);
+let jobs = {}; 
+
+const mailer = async (jobName, schedule, to) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -12,16 +13,16 @@ const mailer=async(timer,to)=>{
             pass: process.env.your_pass 
         }
     });
-    
-    
-    cron.schedule('*/1 * * * *', () => {
+
+
+    jobs[jobName] = cron.schedule(schedule, () => {
         const mailOptions = {
             from: process.env.your_email,
             to: to,
             subject: 'Reminder',
-            text: 'This is your reminder sent every minute!'
+            text: 'This is your reminder sent based on the schedule!'
         };
-    
+
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 return console.error('Error sending email:', error);
@@ -30,20 +31,22 @@ const mailer=async(timer,to)=>{
         });
         console.log("Task is running!");
     });
-    console.log("Cron job started. Waiting for scheduled tasks...");
-}
-const stopCronJob = () => {
-    if (cronJob) {
-        cronJob.stop();
-        console.log("Cron job stopped.");
+    
+    console.log(`Cron job ${jobName} started with schedule ${schedule}.`);
+};
+
+const stopCronJob = (jobName) => {
+    if (jobs[jobName]) {
+        jobs[jobName].stop();
+        console.log(`Cron job ${jobName} stopped.`);
     } else {
-        console.log("No cron job is currently running.");
+        console.log(`No cron job found with name ${jobName}.`);
     }
 };
 
-const restartCronJob = async (timer, to) => {
-    stopCronJob();
-    await mailer(timer, to); 
+const restartCronJob = (jobName, schedule, to) => {
+    stopCronJob(jobName);
+    mailer(jobName, schedule, to);
 };
 
-module.exports={mailer,stopCronJob,restartCronJob};
+module.exports = { mailer, stopCronJob, restartCronJob };
