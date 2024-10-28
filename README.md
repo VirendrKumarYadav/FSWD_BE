@@ -1,8 +1,8 @@
 # Email Scheduler API
 
 ### Hosted URL : {   
-### BE:https://fswd-be.onrender.com/api/v1/mail,      
-### FE:https://fswd-6.vercel.app/ }
+### BE: https://fswd-be.onrender.com/api/v1/mail,      
+### FE: https://fswd-6.vercel.app/ }
               
 ## Description
 
